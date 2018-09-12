@@ -44,7 +44,7 @@ func run(stdin io.Reader, cmdName string, params ...string) error {
 
 func usage() int {
 	getopt.Usage()
-	err := run(os.Stdin, "cryptsetup", "--help")
+	err := run(os.Stdin, "cryptsetup-origin", "--help")
 	checkError(err)
 	return int(syscall.EINVAL)
 }
@@ -98,6 +98,6 @@ func main() {
 		stdin = bytes.NewReader(decryptedKey)
 	}
 
-	err = run(stdin, "cryptsetup", args...)
+	err = run(stdin, "cryptsetup-origin", args...)
 	checkError(err)
 }
