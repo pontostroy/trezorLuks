@@ -11,6 +11,7 @@ import (
 
 	"github.com/pborman/getopt/v2"
 	"github.com/xaionaro-go/cryptoWallet"
+	"github.com/xaionaro-go/pinentry"
 )
 
 var (
@@ -77,12 +78,16 @@ func main() {
 
 	case "luksOpen", "luksFormat", "luksDump", "luksResume", "luksAddKey", "luksChangeKey":
 		fmt.Println("Sent the request to the Trezor device (please confirm the operation if required)")
+		p, _ := pinentry.NewPinentryClient()
+		defer p.Close()
 		wallet := cryptoWallet.FindAny()
 		wallet.SetGetPinFunc(func(title, description, ok, cancel string) ([]byte, error) {
-			cmd := exec.Command("/lib/cryptsetup/askpass", title)
-			cmd.Stdin = os.Stdin
-			cmd.Stderr = os.Stderr
-			return cmd.Output()
+			p.SetTitle(title)
+			p.SetDesc(description)
+			p.SetPrompt(title)
+			p.SetOK(ok)
+			p.SetCancel(cancel)
+			return p.GetPin()
 		})
 		wallet.SetGetConfirmFunc(func(title, description, ok, cancel string) (bool, error) {
 			return false, nil // Confirmation is required to reconnect to Trezor. We considered that disconnected Trezor is enough to exit the program.
